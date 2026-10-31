@@ -9,6 +9,8 @@ const gamecmd = require('./gamecmd');
 const { createObserver } = require('./observer');
 const { faceitMaps } = require('./faceit');
 const setupPack = require('./setup');
+const updates = require('./update');
+const license = require('./license');
 
 const PORT = 34820;
 const HOST = '127.0.0.1';
@@ -153,6 +155,7 @@ function snapshot() {
     },
     board: store.publicBoard(),
     side: store.publicSide(),
+    license: license.publicState(),
   };
 }
 
@@ -623,7 +626,10 @@ async function api(req, res, pathname) {
       send(res, 401, { error: session.error });
       return;
     }
-    send(res, 200, { name: session.user.name, founder: store.isFounder(session.user), sealed: setupPack.isSealed(root) }, {
+    const ident = license.identity(body.name, body.password);
+    store.setIdentity(session.user.id, ident);
+    license.afterLogin(ident).catch(() => {});
+    send(res, 200, { name: session.user.name, founder: store.isFounder(session.user), sealed: setupPack.isSealed(root), version: updates.localVersion(root) }, {
       'Set-Cookie': `echo=${session.token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${30 * 24 * 60 * 60}`,
     });
     return;
@@ -635,14 +641,90 @@ async function api(req, res, pathname) {
     return;
   }
 
+  if (req.method === 'POST' && pathname === '/api/license') {
+    let body = {};
+    try { body = JSON.parse(await readBody(req, 20_000) || '{}'); } catch { body = {}; }
+    if (!user.identity) {
+      send(res, 400, { error: 'Üyelikten çıkıp tekrar gir, sonra lisansı yaz.' });
+      return;
+    }
+    try {
+      const result = await license.redeem(user.identity, body.key);
+      if (result.error) {
+        send(res, 400, result);
+        return;
+      }
+      broadcast();
+      send(res, 200, { ok: true });
+    } catch (err) {
+      send(res, 502, { error: err.message || 'Lisans kaydı yazılamadı.' });
+    }
+    return;
+  }
+
+  if (req.method === 'POST' && pathname === '/api/license/mint') {
+    if (!user.founder) {
+      send(res, 403, { error: 'Lisansı yalnız kurucu üretir.' });
+      return;
+    }
+    try {
+      send(res, 200, await license.mint());
+    } catch {
+      send(res, 502, { error: 'Lisans üretilemedi.' });
+    }
+    return;
+  }
+
+  if (license.publicState().locked && pathname !== '/api/logout' && pathname !== '/api/me') {
+    send(res, 403, { error: 'Lisans girin.' });
+    return;
+  }
+
   if (req.method === 'GET' && pathname === '/api/me') {
-    send(res, 200, { name: user.name, founder: !!user.founder, sealed: setupPack.isSealed(root) });
+    send(res, 200, { name: user.name, founder: !!user.founder, sealed: setupPack.isSealed(root), version: updates.localVersion(root) });
     return;
   }
 
   if (req.method === 'POST' && pathname === '/api/logout') {
     store.logout(cookies(req).echo);
     send(res, 200, { ok: true }, { 'Set-Cookie': 'echo=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0' });
+    return;
+  }
+
+  if (req.method === 'GET' && pathname === '/api/update') {
+    try {
+      const info = await updates.check(root);
+      send(res, 200, { current: info.current, version: info.version, newer: info.newer });
+    } catch {
+      send(res, 502, { error: 'Güncellemelere bakılamadı.' });
+    }
+    return;
+  }
+
+  if (req.method === 'POST' && pathname === '/api/update') {
+    let info;
+    try {
+      info = await updates.check(root);
+    } catch {
+      send(res, 502, { error: 'Güncellemelere bakılamadı.' });
+      return;
+    }
+    if (!info.newer || !info.url) {
+      send(res, 200, { ok: true, newer: false, current: info.current, version: info.version });
+      return;
+    }
+    try {
+      stopOverlay();
+      await updates.install(root, info.url, { sealed: setupPack.isSealed(root) });
+    } catch {
+      send(res, 500, { error: 'Güncelleme kurulamadı.' });
+      return;
+    }
+    send(res, 200, { ok: true, newer: true, version: info.version });
+    setTimeout(() => {
+      updates.relaunch(root);
+      process.exit(0);
+    }, 700);
     return;
   }
 
@@ -850,6 +932,11 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
+license.bindContext({
+  founder: () => store.sessionContext().founder,
+  identity: () => store.sessionContext().identity,
+});
+license.start();
 migrateAds();
 adoptAds();
 

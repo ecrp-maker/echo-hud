@@ -489,6 +489,34 @@ function renderStatus(msg) {
   applyForm(msg.settings);
   paintAd(msg.board);
   paintSide(msg.side);
+  paintLicense(msg.license);
+}
+
+function fmtRemain(ms) {
+  const total = Math.max(0, Math.ceil(Number(ms) / 1000));
+  return Math.floor(total / 60) + ':' + String(total % 60).padStart(2, '0');
+}
+
+function paintLicense(info) {
+  if (!info) return;
+  const state = document.getElementById('licenseState');
+  if (state) {
+    if (info.founder || info.licensed) state.textContent = 'Lisans aktif';
+    else state.textContent = 'Deneme ' + fmtRemain(info.remaining);
+  }
+  const gate = document.getElementById('licenseGate');
+  const close = document.getElementById('licenseClose');
+  const copy = document.getElementById('licenseCopy');
+  if (!gate) return;
+  if (info.locked) {
+    gate.hidden = false;
+    gate.dataset.locked = '1';
+    if (close) close.hidden = true;
+    if (copy) copy.textContent = 'Deneme süresi bitti. Lisans girin.';
+  } else if (gate.dataset.locked === '1') {
+    gate.dataset.locked = '';
+    gate.hidden = true;
+  }
 }
 
 const adSlots = {
@@ -619,7 +647,7 @@ async function openOverlay(hud) {
   return post('/api/overlay', { hud: hud || selectedHud() });
 }
 
-function showApp(name, founder, sealed) {
+function showApp(name, founder, sealed, version) {
   document.getElementById('login').hidden = true;
   document.getElementById('app').hidden = false;
   document.getElementById('userLabel').textContent = name;
@@ -628,8 +656,10 @@ function showApp(name, founder, sealed) {
   if (tools) tools.hidden = !canEdit;
   const sideTools = document.getElementById('sideTools');
   if (sideTools) sideTools.hidden = !canEdit;
-  const setupNav = document.querySelector('.rail-btn[data-panel="setup"]');
-  if (setupNav) setupNav.hidden = !canEdit;
+  const label = document.getElementById('appVersion');
+  if (label && version) label.textContent = version;
+  const mint = document.getElementById('licenseMint');
+  if (mint) mint.hidden = !founder;
   requestAnimationFrame(paintAdSize);
 }
 
@@ -645,7 +675,6 @@ function bindPanels() {
     pause: ['03', 'Pause'],
     brand: ['04', 'Marka'],
     cast: ['05', 'Yayın'],
-    setup: ['06', 'Setup'],
   };
   document.querySelectorAll('.rail-btn').forEach((button) => {
     button.addEventListener('click', () => {
@@ -685,7 +714,7 @@ function bind() {
         name: document.getElementById('loginName').value,
         password: document.getElementById('loginPass').value,
       });
-      showApp(data.name, !!data.founder, !!data.sealed);
+      showApp(data.name, !!data.founder, !!data.sealed, data.version || '');
     } catch (err) {
       document.getElementById('loginError').textContent = err.message;
     } finally {
@@ -965,36 +994,88 @@ function bind() {
     note('Adres kopyalandı.', 'ok');
   });
 
-  document.getElementById('makeSetup').addEventListener('click', async () => {
-    const button = document.getElementById('makeSetup');
-    const note = document.getElementById('setupNote');
+  document.getElementById('checkUpdate').addEventListener('click', async () => {
+    const button = document.getElementById('checkUpdate');
+    const run = document.getElementById('runUpdate');
+    const note = document.getElementById('updateNote');
     button.disabled = true;
-    note.textContent = 'Setup hazırlanıyor.';
+    run.hidden = true;
+    note.textContent = 'Güncellemelere bakılıyor.';
     try {
-      const res = await fetch('/api/setup', { method: 'POST' });
-      if (!res.ok) {
-        let message = 'Setup oluşmadı.';
-        try {
-          const data = await res.json();
-          if (data.error) message = data.error;
-        } catch { /* yanıt yazı değil */ }
-        note.textContent = message;
+      const res = await fetch('/api/update');
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        showLogin();
         return;
       }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'ECHO-HUD-Setup.zip';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1500);
-      note.textContent = 'Setup indi. Zip’i açan kişi ECHO HUD.bat ile başlatır.';
-    } catch {
-      note.textContent = 'Setup oluşmadı.';
+      if (!res.ok) throw new Error(data.error || 'Güncellemelere bakılamadı.');
+      const label = document.getElementById('appVersion');
+      if (label && data.current) label.textContent = data.current;
+      if (data.newer) {
+        note.textContent = data.version + ' hazır.';
+        run.hidden = false;
+      } else {
+        note.textContent = 'Bu sürüm güncel.';
+      }
+    } catch (err) {
+      note.textContent = err.message || 'Güncellemelere bakılamadı.';
     } finally {
       button.disabled = false;
+    }
+  });
+
+  document.getElementById('runUpdate').addEventListener('click', async () => {
+    const run = document.getElementById('runUpdate');
+    const note = document.getElementById('updateNote');
+    run.disabled = true;
+    note.textContent = 'Yeni sürüm indiriliyor.';
+    try {
+      const data = await post('/api/update');
+      if (!data.newer) {
+        note.textContent = 'Bu sürüm güncel.';
+        run.hidden = true;
+        return;
+      }
+      note.textContent = data.version + ' kuruldu. Program yeniden açılıyor.';
+    } catch (err) {
+      note.textContent = err.message || 'Güncelleme kurulamadı.';
+      run.disabled = false;
+    }
+  });
+
+  document.getElementById('licenseOpen').addEventListener('click', () => {
+    const gate = document.getElementById('licenseGate');
+    document.getElementById('licenseMsg').textContent = '';
+    gate.hidden = false;
+  });
+
+  document.getElementById('licenseClose').addEventListener('click', () => {
+    const gate = document.getElementById('licenseGate');
+    if (gate.dataset.locked === '1') return;
+    gate.hidden = true;
+  });
+
+  document.getElementById('licenseForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const msg = document.getElementById('licenseMsg');
+    msg.textContent = 'Lisans kaydediliyor.';
+    try {
+      await post('/api/license', { key: document.getElementById('licenseKey').value });
+      msg.textContent = 'Lisans aktif.';
+      document.getElementById('licenseGate').hidden = true;
+    } catch (err) {
+      msg.textContent = err.message || 'Lisans kaydı yazılamadı.';
+    }
+  });
+
+  document.getElementById('licenseNew').addEventListener('click', async () => {
+    const fresh = document.getElementById('licenseFresh');
+    fresh.textContent = 'Üretiliyor.';
+    try {
+      const data = await post('/api/license/mint');
+      fresh.textContent = data.key || '';
+    } catch (err) {
+      fresh.textContent = err.message || 'Lisans üretilemedi.';
     }
   });
 
@@ -1024,7 +1105,7 @@ async function boot() {
       return;
     }
     const data = await res.json();
-    showApp(data.name, !!data.founder, !!data.sealed);
+    showApp(data.name, !!data.founder, !!data.sealed, data.version || '');
   } catch {
     showLogin();
     document.getElementById('loginError').textContent = 'Panel açılmadı.';

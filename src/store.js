@@ -259,13 +259,34 @@ function logout(token) {
   save();
 }
 
+function setIdentity(userId, identity) {
+  const user = db.users.find((item) => item.id === userId);
+  if (!user || !identity || user.identity === identity) return;
+  user.identity = identity;
+  save();
+}
+
 function userBySession(token) {
   if (!token) return null;
   const now = Date.now();
   const session = db.sessions.find((item) => item.token === token && item.exp > now);
   if (!session) return null;
   const user = db.users.find((item) => item.id === session.userId);
-  return user ? { id: user.id, name: user.name, founder: isFounder(user) } : null;
+  return user ? { id: user.id, name: user.name, founder: isFounder(user), identity: user.identity || '' } : null;
+}
+
+function sessionContext() {
+  const now = Date.now();
+  let founder = false;
+  let identity = '';
+  for (const session of db.sessions) {
+    if (session.exp <= now) continue;
+    const user = db.users.find((item) => item.id === session.userId);
+    if (!user) continue;
+    if (isFounder(user)) founder = true;
+    if (user.identity) identity = user.identity;
+  }
+  return { founder, identity };
 }
 
 function isFounder(user) {
@@ -334,7 +355,9 @@ module.exports = {
   createUser,
   login,
   logout,
+  setIdentity,
   userBySession,
+  sessionContext,
   isFounder,
   publicBoard,
   publicSide,

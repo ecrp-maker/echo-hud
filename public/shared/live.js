@@ -72,6 +72,31 @@
     document.documentElement.style.setProperty('--t', game.t.color || '#f0b45a');
   }
 
+  function paintLicenseWall(info) {
+    let wall = document.getElementById('licenseWall');
+    if (!wall) {
+      wall = document.createElement('div');
+      wall.id = 'licenseWall';
+      wall.hidden = true;
+      const title = document.createElement('strong');
+      title.textContent = 'Lisans girin';
+      wall.appendChild(title);
+      wall.style.position = 'fixed';
+      wall.style.inset = '0';
+      wall.style.zIndex = '30';
+      wall.style.display = 'grid';
+      wall.style.placeItems = 'center';
+      wall.style.background = '#050505';
+      wall.style.color = '#f4f7f2';
+      title.style.font = '760 92px/1 Segoe UI Variable, Segoe UI, sans-serif';
+      title.style.letterSpacing = '-0.04em';
+      document.body.appendChild(wall);
+    }
+    const locked = !!(info && info.locked);
+    wall.hidden = !locked;
+    wall.style.display = locked ? 'grid' : 'none';
+  }
+
   function watch(render) {
     const params = new URLSearchParams(location.search);
     const preview = params.has('preview');
@@ -89,6 +114,7 @@
         : (preview || (msg.started && msg.hud === page)) && !!game.map;
       document.body.classList.toggle('off', !show);
       document.body.classList.toggle('waiting', !!preview && !game.map);
+      paintLicenseWall(msg.license);
       if (show) {
         paintTeams(game);
         render(game, msg.settings || {});

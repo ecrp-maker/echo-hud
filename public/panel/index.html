@@ -49,7 +49,6 @@
         <button class="rail-btn" type="button" data-panel="pause"><b>03</b><span>Pause</span></button>
         <button class="rail-btn" type="button" data-panel="brand"><b>04</b><span>Marka</span></button>
         <button class="rail-btn" type="button" data-panel="cast"><b>05</b><span>Yayın</span></button>
-        <button class="rail-btn" type="button" data-panel="setup" hidden><b>06</b><span>Setup</span></button>
       </nav>
       <aside id="sideBoard" class="ad-board side-board">
         <img id="sideImage" alt="" hidden />
@@ -63,6 +62,14 @@
         </div>
       </aside>
       <div class="rail-foot">
+        <div class="rail-update">
+          <p class="hint">Sürüm <b id="appVersion">1.0.1</b></p>
+          <button id="checkUpdate" class="text" type="button">Güncellemeleri denetle</button>
+          <button id="runUpdate" class="text" type="button" hidden>İndir ve kur</button>
+          <p id="updateNote"></p>
+        </div>
+        <button id="licenseOpen" class="text" type="button">Lisans gir</button>
+        <span id="licenseState"></span>
         <span id="userLabel"></span>
         <button id="logout" class="text" type="button">Çıkış</button>
       </div>
@@ -290,14 +297,6 @@
       <p class="hint">Başlatınca HUD CS2 penceresinin üstüne biner, tıklama oyuna geçer. OBS için oyunu oyun yakalama, HUD'u tarayıcı kaynağı olarak ekle.</p>
     </footer>
       </section>
-
-      <section class="view" data-panel="setup" hidden>
-        <p class="view-lead">Setup, programı ve şu anki reklamları içerir. Alan kişi kendi hesabını açar. Reklamları görür, değiştiremez. Maç bilgisi ve marka boş başlar.</p>
-        <div class="actions">
-          <button id="makeSetup" class="primary" type="button">Setup oluştur</button>
-        </div>
-        <p id="setupNote" class="hint"></p>
-      </section>
     </div>
     <aside id="adBoard" class="ad-board">
       <img id="adImage" alt="" hidden />
@@ -312,6 +311,22 @@
     </aside>
     </div>
   </main>
+  <div id="licenseGate" class="license-gate" hidden>
+    <form id="licenseForm" class="license-card">
+      <h2>Lisans girin</h2>
+      <p id="licenseCopy">Lisans anahtarını yaz.</p>
+      <input id="licenseKey" autocomplete="off" spellcheck="false" placeholder="ECHO-XXXX-XXXX-XXXX" />
+      <div class="actions">
+        <button class="primary" type="submit">Lisansı kaydet</button>
+        <button id="licenseClose" class="ghost" type="button">Kapat</button>
+      </div>
+      <p id="licenseMsg" class="hint"></p>
+      <div id="licenseMint" hidden>
+        <button id="licenseNew" class="ghost" type="button">Lisans üret</button>
+        <p id="licenseFresh" class="hint"></p>
+      </div>
+    </form>
+  </div>
   <script src="/panel/panel.js"></script>
 </body>
 </html>
