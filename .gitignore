@@ -1,4 +1,6 @@
 node_modules/
+dist/
+ECHO HUD.exe
 .echo-data/
 setup.lock
 *.zip

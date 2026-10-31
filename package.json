@@ -1,6 +1,6 @@
 {
   "name": "echo-hud",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "ECHO HUD — CS2 yayın paneli",
   "main": "src/main.js",

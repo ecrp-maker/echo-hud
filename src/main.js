@@ -14,7 +14,14 @@ const license = require('./license');
 
 const PORT = 34820;
 const HOST = '127.0.0.1';
-const root = path.resolve(__dirname, '..');
+
+function appRoot() {
+  const base = path.basename(process.execPath).toLowerCase();
+  if (base !== 'node.exe' && base !== 'node') return path.dirname(process.execPath);
+  return path.resolve(__dirname, '..');
+}
+
+const root = appRoot();
 const publicDir = path.resolve(root, 'public');
 const clients = new Set();
 const demoStarted = Date.now();
@@ -931,6 +938,11 @@ server.on('error', (err) => {
   console.error(err);
   process.exit(1);
 });
+
+if (process.argv.includes('--version')) {
+  console.log(updates.localVersion(root));
+  process.exit(0);
+}
 
 license.bindContext({
   founder: () => store.sessionContext().founder,

@@ -149,10 +149,18 @@ async function install(root, url, options = {}) {
   }
 }
 
+function isPackaged() {
+  const base = path.basename(process.execPath).toLowerCase();
+  return base !== 'node.exe' && base !== 'node';
+}
+
 function relaunch(root) {
   const script = path.join(os.tmpdir(), 'echo-hud-restart.ps1');
   const main = path.join(root, 'src', 'main.js');
   const quote = (value) => "'" + String(value).replace(/'/g, "''") + "'";
+  const launch = isPackaged()
+    ? 'Start-Process -FilePath ' + quote(process.execPath) + ' -WorkingDirectory ' + quote(root)
+    : 'Start-Process -FilePath ' + quote(process.execPath) + ' -ArgumentList ' + quote(main) + ' -WorkingDirectory ' + quote(root);
   const body = [
     "$ErrorActionPreference = 'SilentlyContinue'",
     'Remove-Item Env:ECHO_NO_WINDOW -ErrorAction SilentlyContinue',
@@ -162,7 +170,7 @@ function relaunch(root) {
     '  if (-not $hit) { break }',
     '  Start-Sleep -Milliseconds 400',
     '}',
-    'Start-Process -FilePath ' + quote(process.execPath) + ' -ArgumentList ' + quote(main) + ' -WorkingDirectory ' + quote(root),
+    launch,
   ].join('\r\n');
   fs.writeFileSync(script, body);
   spawn('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script], {

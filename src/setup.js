@@ -18,6 +18,8 @@ function buildSetupZip(root) {
     fs.cpSync(path.join(root, 'native', 'overlay'), path.join(dest, 'native', 'overlay'), { recursive: true });
     fs.copyFileSync(path.join(root, 'package.json'), path.join(dest, 'package.json'));
     fs.copyFileSync(path.join(root, 'ECHO HUD.bat'), path.join(dest, 'ECHO HUD.bat'));
+    const exe = path.join(root, 'ECHO HUD.exe');
+    if (fs.existsSync(exe)) fs.copyFileSync(exe, path.join(dest, 'ECHO HUD.exe'));
     fs.writeFileSync(path.join(dest, 'setup.lock'), '{"sealed":true}\n');
     const zip = path.join(stage, 'ECHO-HUD-Setup.zip');
     execFileSync('tar', ['-a', '-c', '-f', zip, '-C', stage, 'ECHO HUD'], { windowsHide: true });

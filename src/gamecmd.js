@@ -91,10 +91,18 @@ function enqueue(task) {
   return run;
 }
 
+function sendkeyScript() {
+  const candidates = [
+    path.join(__dirname, 'sendkey.ps1'),
+    path.join(path.dirname(process.execPath), 'src', 'sendkey.ps1'),
+  ];
+  return candidates.find((file) => fs.existsSync(file)) || candidates[0];
+}
+
 function sendCommand(text, consoleKey, stay, options) {
   const plan = keyPlan(consoleKey);
   const ps = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
-  const script = path.join(__dirname, 'sendkey.ps1');
+  const script = sendkeyScript();
   const extra = options || {};
   const args = [
     '-NoProfile',
