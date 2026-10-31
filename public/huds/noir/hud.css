@@ -1,0 +1,185 @@
+* { box-sizing: border-box; }
+
+:root {
+  --ct: #8ecbff;
+  --t: #f0b45a;
+  --ink: #e7e1d6;
+}
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: Bahnschrift, "Segoe UI Variable", "Segoe UI", sans-serif;
+  color: var(--ink);
+}
+
+body.preview {
+  background:
+    radial-gradient(900px 480px at 30% 30%, rgba(70, 78, 88, 0.28), transparent 60%),
+    radial-gradient(800px 520px at 80% 80%, rgba(40, 36, 32, 0.4), transparent 55%),
+    #121416;
+}
+
+body.off #stage, body.waiting #stage { opacity: 0; }
+
+#stage {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+  left: 0;
+  top: 0;
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+#wait {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  letter-spacing: 0.22em;
+  font-size: 14px;
+  color: rgba(231, 225, 214, 0.8);
+}
+body.waiting #wait { display: block; }
+
+.roster {
+  position: absolute;
+  top: 50%;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform: translateY(-50%);
+}
+.roster.ct { left: 36px; }
+.roster.t { right: 36px; }
+
+.card {
+  position: relative;
+  min-height: 86px;
+  padding: 12px 14px 11px;
+  overflow: hidden;
+  background: rgba(7, 9, 11, 0.82);
+}
+.roster.ct .card { border-left: 3px solid var(--ct); }
+.roster.t .card { border-right: 3px solid var(--t); text-align: right; }
+.card.observed { background: rgba(14, 18, 22, 0.94); }
+.card.dead { opacity: 0.34; }
+.card .flash {
+  position: absolute;
+  inset: 0;
+  background: white;
+  pointer-events: none;
+}
+.hpnum {
+  position: relative;
+  font-size: 36px;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+.roster.ct .hpnum { color: var(--ct); }
+.roster.t .hpnum { color: var(--t); }
+.card.low .hpnum { color: #ff4b3a; }
+.card.dead .hpnum { color: rgba(231, 225, 214, 0.7); }
+.pname {
+  position: relative;
+  margin-top: 4px;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.kd {
+  position: relative;
+  margin-top: 2px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(231, 225, 214, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+.line {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(231, 225, 214, 0.74);
+  font-variant-numeric: tabular-nums;
+}
+.roster.t .line { flex-direction: row-reverse; }
+.marks { display: inline-flex; gap: 6px; }
+.roster.t .head-row { display: flex; flex-direction: row-reverse; justify-content: flex-start; gap: 8px; align-items: baseline; }
+.head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.tag {
+  border: 1px solid rgba(240, 180, 90, 0.7);
+  color: #f0b45a;
+  padding: 1px 4px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.tag.kit { border-color: rgba(142, 203, 255, 0.75); color: var(--ct); }
+
+.center {
+  position: absolute;
+  top: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 460px;
+  padding: 16px 36px 14px;
+  text-align: center;
+  background: rgba(7, 9, 11, 0.58);
+}
+.title {
+  margin-bottom: 8px;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(231, 225, 214, 0.58);
+}
+.title:empty { display: none; }
+.scores { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.big {
+  min-width: 108px;
+  font-size: 92px;
+  line-height: 0.84;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+.big.lead { color: white; }
+.big.trail { color: rgba(231, 225, 214, 0.62); }
+.rule { width: 28px; height: 2px; background: rgba(231, 225, 214, 0.45); }
+.teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 18px;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+#ctName { text-align: right; color: var(--ct); }
+#tName { text-align: left; color: var(--t); }
+#round { color: rgba(231, 225, 214, 0.55); letter-spacing: 0.14em; }
+.timer {
+  margin-top: 8px;
+  font-size: 28px;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+}
+.timer.hot { color: #ff4b3a; }
+.meta {
+  min-height: 16px;
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: rgba(231, 225, 214, 0.66);
+}
+.meta.hot { color: #ff4b3a; }

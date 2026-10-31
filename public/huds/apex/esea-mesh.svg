@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+  <rect width="28" height="28" fill="#070707"/>
+  <g fill="#161616">
+    <circle cx="4" cy="4" r="1.15"/>
+    <circle cx="14" cy="4" r="1.15"/>
+    <circle cx="24" cy="4" r="1.15"/>
+    <circle cx="9" cy="9" r="1.15"/>
+    <circle cx="19" cy="9" r="1.15"/>
+    <circle cx="4" cy="14" r="1.15"/>
+    <circle cx="14" cy="14" r="1.15"/>
+    <circle cx="24" cy="14" r="1.15"/>
+    <circle cx="9" cy="19" r="1.15"/>
+    <circle cx="19" cy="19" r="1.15"/>
+    <circle cx="4" cy="24" r="1.15"/>
+    <circle cx="14" cy="24" r="1.15"/>
+    <circle cx="24" cy="24" r="1.15"/>
+  </g>
+  <g fill="#101010">
+    <circle cx="4" cy="4" r="0.45"/>
+    <circle cx="14" cy="4" r="0.45"/>
+    <circle cx="24" cy="4" r="0.45"/>
+    <circle cx="9" cy="9" r="0.45"/>
+    <circle cx="19" cy="9" r="0.45"/>
+    <circle cx="4" cy="14" r="0.45"/>
+    <circle cx="14" cy="14" r="0.45"/>
+    <circle cx="24" cy="14" r="0.45"/>
+    <circle cx="9" cy="19" r="0.45"/>
+    <circle cx="19" cy="19" r="0.45"/>
+    <circle cx="4" cy="24" r="0.45"/>
+    <circle cx="14" cy="24" r="0.45"/>
+    <circle cx="24" cy="24" r="0.45"/>
+  </g>
+</svg>

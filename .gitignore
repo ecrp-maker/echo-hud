@@ -1,0 +1,8 @@
+node_modules/
+.echo-data/
+setup.lock
+*.zip
+FaceitKontrol/
+_apex.png
+_noir.png
+apex-check.png
