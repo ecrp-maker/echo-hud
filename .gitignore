@@ -8,3 +8,9 @@ FaceitKontrol/
 _apex.png
 _noir.png
 apex-check.png
+src/
+public/
+native/
+scripts/
+package.json
+ECHO HUD.bat
