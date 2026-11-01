@@ -1,5 +1,11 @@
 {
-  "keys": {},
+  "keys": {
+    "ECHO-2MED-UBGF-UV5F": {
+      "account": "",
+      "machine": "",
+      "at": 1793494942883
+    }
+  },
   "trials": {
     "4a43a30a3575c6193556e0d54ca0fad0": 1793488462442
   }
