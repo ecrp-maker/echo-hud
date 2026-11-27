@@ -1,0 +1,17 @@
+node_modules/
+dist/
+ECHO HUD.exe
+ECHO HUD Setup.exe
+.echo-data/
+setup.lock
+*.zip
+FaceitKontrol/
+_apex.png
+_noir.png
+apex-check.png
+src/
+public/
+native/
+scripts/
+package.json
+ECHO HUD.bat
